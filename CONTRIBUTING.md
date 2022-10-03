@@ -31,4 +31,12 @@ For bug reports, it's very important to explain
 * what behavior you expected.
 
 ### Run the tests
+To run the integration-tests we have to make sure you have a cassandra instance up and running.
+For that reason there is a provided [docker manifest](./docker/docker-compose.yml) you can use to fire up your instance (`docker-compose up -d`).
 
+Once your instance is ready we must continue by setting up the database.
+The idea is to mimic the akka-persistance environment to facilite projects willing to migrate out of it.
+To do that we need to run the [script provided](./scripts/cassandra.sh) as `./cassandra.sh setup`.
+This will create all the necessary tables following the akka-persistance schema.
+
+Finally we can execute `sbt test` to spin them up.
