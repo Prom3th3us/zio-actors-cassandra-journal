@@ -1,0 +1,5 @@
+-J-XX:+UseZGC
+-J-Xmx2G
+-Dsbt.repository.config=project/repositories
+-Dsbt.override.build.repos=true
+-Dsbt.boot.credentials=.sbt/.credentials

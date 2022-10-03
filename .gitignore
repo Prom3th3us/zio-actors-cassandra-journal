@@ -1,0 +1,32 @@
+# Java classes
+*.class
+
+# Logs
+*.log
+
+# IDE
+## Idea
+.idea
+## VSCode
+.bsp/
+.vscode
+## Metals
+.metals/
+metals.sbt
+project/metals.sbt
+
+# Docker
+docker/data/
+
+# Simple Build Tool
+dist/*
+**/target
+target/
+project/target/
+project/project/
+.history
+.cache
+.lib/
+project/project/.bloop/
+project/.bloop/
+.bloop/
