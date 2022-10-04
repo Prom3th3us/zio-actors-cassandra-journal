@@ -5,3 +5,18 @@ services:
     image: cassandra
     ports:
       - 9042:9042
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  # These exists to force the condition of having the Cassandra service is up before starting the tests.
+  # The healthcheck above is not enough because it does not provide a condition to wait for the service
+  # to be up. And this is simpler than installing cqlsh and using it to check the service status on the
+  # CI server. This uses alpine since it is a pretty small image.
+  cassandra-ci-healthcheck:
+    image: alpine:latest
+    depends_on:
+      cassandra:
+        condition: service_healthy

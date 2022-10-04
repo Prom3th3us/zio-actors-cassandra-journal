@@ -47,6 +47,9 @@ jobs:
       - name: Start containers
         run: docker-compose -f "docker/docker-compose.yml" up -d --build
 
+      - name: Setup cassandra
+        run: ./scripts/cassandra.sh setup
+
       - name: Build project
         run: sbt ++${{ matrix.scala }} test
 
@@ -55,7 +58,7 @@ jobs:
         run: docker-compose -f "docker/docker-compose.yml" down  -v
 
       - name: Compress target directories
-        run: tar cf targets.tar target e2e/target akka/target zio/target project/target
+        run: tar cf targets.tar target zio/target project/target
 
       - name: Upload target directories
         uses: actions/upload-artifact@v2
