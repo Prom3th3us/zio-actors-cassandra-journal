@@ -10,11 +10,13 @@ This plugin uses `quill-cassandra` as cql client to connect to the database.
 
 The schema follows the akka-persistance standard to favor apps willing to migrate.
 
-### Known issues
-Because of the current limitations of `zio.actors.persistence.journal.Journal` plugins, we cannot configure custom serializers for our events.
-For this reason, we decided to use `jackson` here.
-Currently this forces us to declare nasty `@JsonTypeInfo` annotations on top of our event case classes.
-Hopefully we can find a better workaround in the near future to provide a much cleaner and elegant api.
+Others can simply sit on top, or fork the project to fit their custom needs.
+
+<hr/>
+
+### ⚔️ Known issues
+Because of `zio.actors.persistence.journal.Journal` plugin limitations, we cannot configure custom serializers for our events.
+For this reason, we decided to use `jackson` here. This forces us to declare nasty `@JsonTypeInfo` annotations on top of our event case classe for it to work, but it does the job quite good, fast and reliable.
 
 ## 🤝 Contributing
 
