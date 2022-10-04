@@ -13,8 +13,8 @@ class CassandraJournalSpec extends AsyncWordSpec with Matchers {
 
   "CassandraJournal" should {
     "should persist and get events" in {
-      val db            = CqlClient()
-      val journal       = new CassandraJournal[Incremented](db, 300)
+      val db            = CqlClient(CqlConfig.default)
+      val journal       = new CassandraJournal[Incremented](db, 300, true)
       val persistenceId = PersistenceId("test")
 
       val runtime = zio.Runtime.default

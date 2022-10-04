@@ -20,7 +20,8 @@ import scala.concurrent.ExecutionContext
 
 final class CassandraJournal[Ev](
     db: CqlClient,
-    numberOfShards: Int
+    numberOfShards: Int,
+    enableSeqNbr: Boolean
 )(implicit trace: zio.Trace)
     extends Journal[Ev] {
 
@@ -50,11 +51,16 @@ final class CassandraJournal[Ev](
 
   private def journal[A](persistence_id: String, shardId: Long, event: A): Task[Unit] = {
     for {
-      // REVIEW(SN): this can be problematic, thus we need to find a better workaround
-      sequenceNr <- ZIO.fromFuture { implicit ec =>
-        db.maxBy(persistence_id, shardId, _.sequence_nr)
-          .map(_.getOrElse(0L))
-      }
+      sequenceNr <-
+        if (enableSeqNbr) {
+          // REVIEW(SN): this can be problematic, thus we need to find a better workaround
+          ZIO.fromFuture { implicit ec =>
+            db.maxBy(persistence_id, shardId, _.sequence_nr)
+              .map(_.getOrElse(0L))
+          }
+        } else {
+          ZIO.succeed(0L)
+        }
       now   = UUIDs.timeBased()
       bytes = mapper.writeValueAsBytes(event)
       message = CqlClient.Messages(
@@ -88,15 +94,14 @@ object CassandraJournal extends JournalFactory {
     }
 
   override def getJournal[Ev](actorSystemName: String, configStr: String): Task[Journal[Ev]] = {
-    val typesafeConfig = ConfigFactory
-      .parseString(configStr)
-      .getConfig(s"$actorSystemName.zio.actors.persistence")
-
-    val cqlConfig = CqlConfig.fromTypesafe(typesafeConfig)
     for {
       tnx <- getTransactor
-      db = CqlClient()(tnx)
-    } yield new CassandraJournal(db, cqlConfig.numberOfShards)
+      typesafeConfig = ConfigFactory
+        .parseString(configStr)
+        .getConfig(s"$actorSystemName.zio.actors.persistence")
+      cqlConfig = CqlConfig.fromTypesafe(typesafeConfig)
+      db        = CqlClient(cqlConfig)(tnx)
+    } yield new CassandraJournal(db, cqlConfig.numberOfShards, cqlConfig.enableAutoIncrSeqNbr)
   }
 
   private def makeTransactor: ZIO[Any, Throwable, ExecutionContext] =

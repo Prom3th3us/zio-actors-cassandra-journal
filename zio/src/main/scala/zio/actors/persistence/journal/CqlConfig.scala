@@ -8,6 +8,7 @@ import CqlConfig._
 
 case class CqlConfig(
     numberOfShards: Int,
+    enableAutoIncrSeqNbr: Boolean,
     keyspace: String,
     preparedStatementCacheSize: Int,
     session: CqlSession
@@ -41,6 +42,7 @@ object CqlConfig {
   def default: CqlConfig =
     CqlConfig(
       numberOfShards = 300,
+      enableAutoIncrSeqNbr = true,
       keyspace = "event_sourcing",
       preparedStatementCacheSize = 100,
       session = CqlSession(
@@ -53,6 +55,7 @@ object CqlConfig {
 
   def fromTypesafe(cql: TypeSafeConfig): CqlConfig = {
     val numberOfShards             = cql.getInt("numberOfShards")
+    val enableAutoIncrSeqNbr       = cql.getBoolean("enableAutoIncrSeqNbr")
     val db                         = cql.getConfig("db")
     val keyspace                   = db.getString("keyspace")
     val preparedStatementCacheSize = db.getInt("preparedStatementCacheSize")
@@ -62,6 +65,7 @@ object CqlConfig {
     val consistencyLevel           = queryOptions.getString("consistencyLevel")
     CqlConfig(
       numberOfShards = numberOfShards,
+      enableAutoIncrSeqNbr = enableAutoIncrSeqNbr,
       keyspace = keyspace,
       preparedStatementCacheSize = preparedStatementCacheSize,
       session = CqlSession(

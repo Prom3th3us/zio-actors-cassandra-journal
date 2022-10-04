@@ -25,7 +25,7 @@ final class CqlClient(
       query[Messages]
         .filter(_.persistence_id == persistenceId)
         .filter(_.partition_nr == shardId)
-        .sortBy(_.sequence_nr)
+        .sortBy(m => (m.sequence_nr, m.timestamp))
         .allowFiltering
     }(lift(persistenceId), lift(shardId)))
 
@@ -50,9 +50,8 @@ object CqlClient {
   )
 
   def apply(
-      maybeConfig: Option[CqlConfig] = None
+      cqlConfig: CqlConfig
   )(implicit ec: ExecutionContext): CqlClient = {
-    val cqlConfig      = maybeConfig.getOrElse(CqlConfig.default)
     val dbClientConfig = CqlConfig.toClientConfig(cqlConfig)
     val context        = new CassandraAsyncContext(SnakeCase, dbClientConfig)
     new CqlClient(context)
