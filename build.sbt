@@ -6,8 +6,6 @@ ThisBuild / conflictManager := ConflictManager.latestRevision
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 ThisBuild / scalacOptions ++= Seq("-Ymacro-annotations", "-target:jvm-17")
 
-import Settings._
-
 inThisBuild(
   List(
     organization := "io.github.prom3th3us",
@@ -25,6 +23,8 @@ inThisBuild(
     sonatypeRepository     := "https://s01.oss.sonatype.org/service/local"
   )
 )
+
+import Settings._
 
 lazy val root = (project in file("."))
   .settings(skip / publish := true)
@@ -51,4 +51,5 @@ lazy val journal = project
       Dependencies.Jackson.all
     ).flatten
   )
-  .enablePlugins(CiReleasePlugin, AshScriptPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .enablePlugins(CiReleasePlugin)
