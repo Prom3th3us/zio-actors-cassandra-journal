@@ -46,3 +46,4 @@ Finally we can execute `sbt test` to spin them up.
 1/ create tag: ```$ git tag -a vX.Y.Z -m "vX.Y.Z"```
 2/ push the tag: ```$ git push origin vX.Y.Z```
 
+Repository link: https://s01.oss.sonatype.org/#nexus-search;quick~io.github.prom3th3us
