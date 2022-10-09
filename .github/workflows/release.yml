@@ -1,17 +1,14 @@
-name: Continuous Integration
-
+name: Release
 on:
-  pull_request:
-    branches: ['**']
   push:
-    branches: ['**']
+    tags: ["*"]
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  build:
-    name: Build and Test
+  publish:
+    name: Release
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +22,7 @@ jobs:
         uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 0
-
+        
       - name: Setup Java (zulu@17)
         if: matrix.java == 'zulu@17'
         uses: actions/setup-java@v3
@@ -45,15 +42,10 @@ jobs:
             ~/Library/Caches/Coursier/v1
           key: ${{ runner.os }}-sbt-cache-v2-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
-      - name: Start containers
-        run: docker-compose -f "docker/docker-compose.yml" up -d --build
-
-      - name: Setup cassandra
-        run: ./scripts/cassandra.sh setup
-
-      - name: Build project
-        run: sbt ++${{ matrix.scala }} test
-
-      - name: Stop containers
-        if: always()
-        run: docker-compose -f "docker/docker-compose.yml" down  -v
+      - name: Release
+        run: sbt ++${{ matrix.scala }} ci-release
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}

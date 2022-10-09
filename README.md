@@ -8,7 +8,7 @@
 
 This plugin uses `quill-cassandra` as cql client to connect to the database.
 
-The schema follows the akka-persistance standard to favor apps willing to migrate.
+The schema follows the [akka-persistance standard](https://doc.akka.io/docs/akka-persistence-cassandra/current/journal.html#schema) to favor apps willing to migrate.
 
 Others can simply sit on top, or fork the project to fit their custom needs.
 

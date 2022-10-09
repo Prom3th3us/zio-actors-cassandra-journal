@@ -8,8 +8,8 @@ import zio.actors.persistence.PersistenceId
 import org.scalatest.BeforeAndAfterAll
 import zio.actors.persistence.journal.CassandraJournal
 
-class CassandraJournalSpec extends AsyncWordSpec with Matchers {
-  import CassandraJournalSpec._
+class CqlJournalSpec extends AsyncWordSpec with Matchers {
+  import CqlJournalSpec._
 
   "CassandraJournal" should {
     "should persist and get events" in {
@@ -33,7 +33,7 @@ class CassandraJournalSpec extends AsyncWordSpec with Matchers {
   }
 }
 
-object CassandraJournalSpec {
+object CqlJournalSpec {
   @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
   case class Incremented(amount: Int)
 }

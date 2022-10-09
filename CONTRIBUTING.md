@@ -37,6 +37,12 @@ For that reason there is a provided [docker manifest](./docker/docker-compose.ym
 Once your instance is ready we must continue by setting up the database.
 The idea is to mimic the akka-persistance environment to facilite projects willing to migrate out of it.
 To do that we need to run the [script provided](./scripts/cassandra.sh) as `./cassandra.sh setup`.
-This will create all the necessary tables following the akka-persistance schema.
+This will create all the necessary tables following the [akka-persistance schema](https://doc.akka.io/docs/akka-persistence-cassandra/current/journal.html#schema).
 
 Finally we can execute `sbt test` to spin them up.
+
+### Release process
+1/ merge/push to main
+1/ create tag: ```$ git tag -a vX.Y.Z -m "vX.Y.Z"```
+2/ push the tag: ```$ git push origin vX.Y.Z```
+

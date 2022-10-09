@@ -1,48 +1,46 @@
 // Global Settings
 ThisBuild / scalaVersion    := "2.13.8"
-ThisBuild / organization    := "Prom3theus"
 ThisBuild / versionScheme   := Some("early-semver")
 ThisBuild / dynverSeparator := "-"
 ThisBuild / conflictManager := ConflictManager.latestRevision
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 ThisBuild / scalacOptions ++= Seq("-Ymacro-annotations", "-target:jvm-17")
-ThisBuild / publish / skip := true // TODO
 
-lazy val commonSettings = Seq(
-  run / fork                := true,
-  Test / testForkedParallel := true,
-  libraryDependencies ++= Seq(
-    Dependencies.Logging.all,
-    Dependencies.TypeSafe.all,
-    Dependencies.Testing.all
-  ).flatten
-)
+import Settings._
 
-lazy val scalafixSettings: Seq[Setting[_]] = Seq(
-  addCompilerPlugin(scalafixSemanticdb),
-  semanticdbEnabled := true,
-  scalafixOnCompile := true
-)
-
-lazy val dockerSettings = Seq(
-  dockerUsername              := sys.props.get("docker.username"),
-  dockerRepository            := sys.props.get("docker.registry"),
-  Docker / version            := "latest",
-  Docker / organization       := "prom3theus",
-  Docker / dockerBaseImage    := "openjdk",
-  Docker / packageName        := "prom3theus/zio-actors-cassandra-journal",
-  Docker / dockerExposedPorts := Seq(9042)
+inThisBuild(
+  List(
+    organization := "io.github.prom3th3us",
+    homepage     := Some(url("https://github.com/prom3th3us/zio-actors-cassandra-journal")),
+    licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    developers := List(
+      Developer(
+        "ffakenz",
+        "Franco Testagrossa",
+        "franco.testagrossa@gmail.com",
+        url("https://github.com/ffakenz")
+      )
+    ),
+    sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository     := "https://s01.oss.sonatype.org/service/local"
+  )
 )
 
 lazy val root = (project in file("."))
+  .settings(skip / publish := true)
+  .disablePlugins(CiReleasePlugin)
+  .settings(CommandAliases.aliases)
+  .aggregate(journal, example)
+
+lazy val example = project
+  .settings(skip / publish := true)
+  .disablePlugins(CiReleasePlugin)
+  .settings(commonSettings, scalafixSettings)
+  .dependsOn(journal)
+
+lazy val journal = project
   .settings(
     name := "zio-actors-cassandra-journal"
-  )
-  .aggregate(zio)
-
-lazy val zio = project
-  .settings(
-    name := "zio"
   )
   .settings(commonSettings, scalafixSettings)
   .settings(
@@ -53,5 +51,4 @@ lazy val zio = project
       Dependencies.Jackson.all
     ).flatten
   )
-  .settings(dockerSettings)
-  .enablePlugins(DockerPlugin, AshScriptPlugin)
+  .enablePlugins(CiReleasePlugin, AshScriptPlugin)

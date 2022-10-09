@@ -1,13 +1,16 @@
 name: Clean
 
-on: push
+on:
+  push:
+    branches: ['**']
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   delete-artifacts:
     name: Delete Artifacts
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Delete artifacts
         run: |

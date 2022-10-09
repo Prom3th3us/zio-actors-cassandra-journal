@@ -14,7 +14,7 @@ class GuildEventSourcedSpec extends AsyncWordSpec with Matchers {
   "GuildEventSourced" should {
     "restart and recover state" in {
       import example.actor.GuildEventSourced._
-      val configPath = "zio/src/main/resources/application.conf"
+      val configPath = "example/src/main/resources/application.conf"
 
       val io = for {
         actorSystem    <- ActorSystem("GuildSystem", Some(new File(configPath)))
@@ -27,10 +27,10 @@ class GuildEventSourcedSpec extends AsyncWordSpec with Matchers {
         // Scenario 1
         guild1 <- actorSystem
           .make(persistenceId1, Supervisor.none, GuildState.empty, handler(persistenceId1))
-        _        <- guild1 ? Join(user1)
-        _        <- guild1 ? Join(user2)
-        members1 <- guild1 ? Get
-        _        <- guild1.stop
+        _ <- guild1 ? Join(user1)
+        _ <- guild1 ? Join(user2)
+        _ <- guild1 ? Get
+        _ <- guild1.stop
         // Scenario 2
         guild2 <- actorSystem
           .make(persistenceId2, Supervisor.none, GuildState.empty, handler(persistenceId2))
