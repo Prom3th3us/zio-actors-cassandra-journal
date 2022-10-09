@@ -7,7 +7,7 @@ ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 ThisBuild / scalacOptions ++= Seq("-Ymacro-annotations", "-target:jvm-17")
 
 inThisBuild(
-  List(
+  Seq(
     organization := "io.github.prom3th3us",
     homepage     := Some(url("https://github.com/prom3th3us/zio-actors-cassandra-journal")),
     licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -26,8 +26,13 @@ inThisBuild(
 
 import Settings._
 
+lazy val root = (project in file("."))
+  .settings(ThisBuild / skip / publish := true)
+  .settings(CommandAliases.aliases)
+  .aggregate(journal, example)
+
 lazy val example = project
-  .settings(skip / publish := true)
+  .settings(ThisBuild / skip / publish := true)
   .settings(commonSettings, scalafixSettings)
   .dependsOn(journal)
 
