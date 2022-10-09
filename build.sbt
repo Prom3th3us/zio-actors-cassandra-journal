@@ -28,11 +28,13 @@ import Settings._
 
 lazy val root = (project in file("."))
   .settings(skip / publish := true)
+  .disablePlugins(CiReleasePlugin)
   .settings(CommandAliases.aliases)
   .aggregate(journal, example)
 
 lazy val example = project
   .settings(skip / publish := true)
+  .disablePlugins(CiReleasePlugin)
   .settings(commonSettings, scalafixSettings)
   .dependsOn(journal)
 
@@ -50,3 +52,4 @@ lazy val journal = project
     ).flatten
   )
   .enablePlugins(AshScriptPlugin)
+  .enablePlugins(CiReleasePlugin)
