@@ -6,6 +6,8 @@ ThisBuild / conflictManager := ConflictManager.latestRevision
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 ThisBuild / scalacOptions ++= Seq("-Ymacro-annotations", "-target:jvm-17")
 
+import Settings._
+
 inThisBuild(
   Seq(
     organization := "io.github.prom3th3us",
@@ -15,7 +17,6 @@ inThisBuild(
       Developer(
         "ffakenz",
         "Franco Testagrossa",
-        "franco.testagrossa@gmail.com",
         url("https://github.com/ffakenz")
       )
     ),
@@ -24,7 +25,6 @@ inThisBuild(
   )
 )
 
-import Settings._
 
 lazy val root = (project in file("."))
   .settings(ThisBuild / skip / publish := true)
