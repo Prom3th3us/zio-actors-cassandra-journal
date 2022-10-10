@@ -3,18 +3,12 @@ package zio.actors.persistence.journal
 import com.datastax.driver.core.utils.UUIDs
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.core.`type`.TypeReference
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping
+import com.fasterxml.jackson.databind.{ DeserializationFeature, ObjectMapper }
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import com.typesafe.config.ConfigFactory
-import zio.Promise
-import zio.Runtime
-import zio.Task
-import zio.Unsafe
-import zio.ZIO
 import zio.actors.persistence.PersistenceId.PersistenceId
+import zio.{ Promise, Runtime, Task, Unsafe, ZIO }
 
 import scala.concurrent.ExecutionContext
 
@@ -94,13 +88,11 @@ object CassandraJournal extends JournalFactory {
     }
 
   override def getJournal[Ev](actorSystemName: String, configStr: String): Task[Journal[Ev]] = {
+    val cleanConfigStr = configStr.replace(s"$actorSystemName.zio.actors.persistence", "")
     for {
-      tnx <- getTransactor
-      typesafeConfig = ConfigFactory
-        .parseString(configStr)
-        .getConfig(s"$actorSystemName.zio.actors.persistence")
-      cqlConfig = CqlConfig.fromTypesafe(typesafeConfig)
-      db        = CqlClient(cqlConfig)(tnx)
+      tnx       <- getTransactor
+      cqlConfig <- CqlConfig.fromString(cleanConfigStr)
+      db = CqlClient(cqlConfig)(tnx)
     } yield new CassandraJournal(db, cqlConfig.numberOfShards, cqlConfig.enableAutoIncrSeqNbr)
   }
 

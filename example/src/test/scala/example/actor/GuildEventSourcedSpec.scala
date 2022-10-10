@@ -2,10 +2,8 @@ package example.actor
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
-import zio.Unsafe
-import zio._
-import zio.actors.ActorSystem
-import zio.actors.Supervisor
+import zio.{ Unsafe, _ }
+import zio.actors.{ ActorSystem, Supervisor }
 
 import java.io.File
 

@@ -54,12 +54,16 @@ object Dependencies {
     val zioActors            = "dev.zio" %% "zio-actors"             % Versions.zioActors
     val zioActorsPersistence = "dev.zio" %% "zio-actors-persistence" % Versions.zioActors
     val zioTest              = "dev.zio" %% "zio-test"               % Versions.zioTest % Test
+    val zioConfig            = "dev.zio" %% "zio-config"             % Versions.zioConfig
+    val zioTypesafe          = "dev.zio" %% "zio-config-typesafe"    % Versions.zioConfig
 
     val all = Seq(
       zio,
       zioActors,
       zioActorsPersistence,
-      zioTest
+      zioTest,
+      zioConfig,
+      zioTypesafe
     )
   }
 

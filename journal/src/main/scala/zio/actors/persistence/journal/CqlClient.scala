@@ -1,12 +1,9 @@
 package zio.actors.persistence.journal
 
-import io.getquill.CassandraAsyncContext
-import io.getquill.NamingStrategy
-import io.getquill.SnakeCase
+import io.getquill.{ CassandraAsyncContext, SnakeCase }
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 final class CqlClient(
     db: CassandraAsyncContext[SnakeCase.type]

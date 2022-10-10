@@ -1,16 +1,11 @@
 package example.actor
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import zio.UIO
-import zio.ZIO
+import zio.{ UIO, ZIO }
 import zio.actors.Context
-import zio.actors.persistence.Command
-import zio.actors.persistence.EventSourcedStateful
-import zio.actors.persistence.PersistenceId
+import zio.actors.persistence.{ Command, EventSourcedStateful, PersistenceId }
 
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 object GuildEventSourced {
   sealed trait GuildMessage[+_]

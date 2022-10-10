@@ -5,8 +5,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 import zio.Unsafe
 import zio.actors.persistence.PersistenceId
-import org.scalatest.BeforeAndAfterAll
-import zio.actors.persistence.journal.CassandraJournal
 
 class CqlJournalSpec extends AsyncWordSpec with Matchers {
   import CqlJournalSpec._

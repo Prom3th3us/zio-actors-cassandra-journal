@@ -1,87 +1,104 @@
 package zio.actors.persistence.journal
 
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.{ Config => TypeSafeConfig }
-import io.getquill.CassandraContextConfig
+import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
+import zio._
+import zio.config._
+import ConfigDescriptor._
+import zio.actors.persistence.journal.CqlConfig._
+import zio.config.typesafe._
 
-import CqlConfig._
+import scala.util.{ Failure, Success, Try }
 
 case class CqlConfig(
     numberOfShards: Int,
     enableAutoIncrSeqNbr: Boolean,
-    keyspace: String,
-    preparedStatementCacheSize: Int,
-    session: CqlSession
+    db: Db
 )
 
 object CqlConfig {
-  sealed trait CqlConsistencyLevel {
-    def asString: String
-  }
-
-  object CqlConsistencyLevel {
-    case object ONE          extends CqlConsistencyLevel { val asString = "ONE"          }
-    case object LOCAL_QUORUM extends CqlConsistencyLevel { val asString = "LOCAL_QUORUM" }
-    def fromString(str: String): Option[CqlConsistencyLevel] =
+  sealed trait ConsistencyLevel
+  object ConsistencyLevel {
+    case object ONE          extends ConsistencyLevel
+    case object LOCAL_QUORUM extends ConsistencyLevel
+    def fromString(str: String): Try[ConsistencyLevel] =
       str match {
-        case ONE.asString          => Some(ONE)
-        case LOCAL_QUORUM.asString => Some(LOCAL_QUORUM)
-        case _                     => None
+        case "ONE"          => Success(ONE)
+        case "LOCAL_QUORUM" => Success(LOCAL_QUORUM)
+        case unknown        => Failure(new IllegalArgumentException(s"Unknown ConsistencyLevel: $unknown"))
       }
   }
 
-  case class CqlQueryOptions(
-      consistencyLevel: CqlConsistencyLevel
+  case class QueryOptions(
+      consistencyLevel: ConsistencyLevel
   )
 
-  case class CqlSession(
+  case class Session(
       contactPoint: String,
-      queryOptions: CqlQueryOptions
+      queryOptions: QueryOptions
+  )
+
+  case class Db(
+      keyspace: String,
+      preparedStatementCacheSize: Int,
+      session: Session
   )
 
   def default: CqlConfig =
     CqlConfig(
       numberOfShards = 300,
       enableAutoIncrSeqNbr = true,
-      keyspace = "event_sourcing",
-      preparedStatementCacheSize = 100,
-      session = CqlSession(
-        contactPoint = "0.0.0.0",
-        queryOptions = CqlQueryOptions(
-          consistencyLevel = CqlConsistencyLevel.ONE
+      db = Db(
+        keyspace = "event_sourcing",
+        preparedStatementCacheSize = 100,
+        session = Session(
+          contactPoint = "0.0.0.0",
+          queryOptions = QueryOptions(
+            consistencyLevel = ConsistencyLevel.ONE
+          )
         )
       )
     )
 
-  def fromTypesafe(cql: TypeSafeConfig): CqlConfig = {
-    val numberOfShards             = cql.getInt("numberOfShards")
-    val enableAutoIncrSeqNbr       = cql.getBoolean("enableAutoIncrSeqNbr")
-    val db                         = cql.getConfig("db")
-    val keyspace                   = db.getString("keyspace")
-    val preparedStatementCacheSize = db.getInt("preparedStatementCacheSize")
-    val session                    = db.getConfig("session")
-    val contactPoint               = session.getString("contactPoint")
-    val queryOptions               = session.getConfig("queryOptions")
-    val consistencyLevel           = queryOptions.getString("consistencyLevel")
-    CqlConfig(
-      numberOfShards = numberOfShards,
-      enableAutoIncrSeqNbr = enableAutoIncrSeqNbr,
-      keyspace = keyspace,
-      preparedStatementCacheSize = preparedStatementCacheSize,
-      session = CqlSession(
-        contactPoint = contactPoint,
-        queryOptions = CqlQueryOptions(
-          consistencyLevel = CqlConsistencyLevel.fromString(consistencyLevel).get
-        )
-      )
+  private val queryOptionsDescriptor: ConfigDescriptor[QueryOptions] =
+    string("consistencyLevel")(
+      str => ConsistencyLevel.fromString(str).map(QueryOptions.apply).get,
+      queryOptions => Some(queryOptions.consistencyLevel.toString)
     )
-  }
+
+  private val sessionDescriptor: ConfigDescriptor[Session] =
+    (string("contactPoint") <*> nested("queryOptions")(queryOptionsDescriptor))(
+      { case (contactPoint, queryOptions) => Session(contactPoint, queryOptions) },
+      Session.unapply
+    )
+
+  private val dbConfigDescriptor: ConfigDescriptor[Db] =
+    (string("keyspace") <*>
+      int("preparedStatementCacheSize") <*>
+      nested("session")(sessionDescriptor))(
+      { case ((str, int), session) => Db(str, int, session) },
+      db => Some(db.keyspace -> db.preparedStatementCacheSize -> db.session)
+    )
+
+  private val configDescriptor: ConfigDescriptor[CqlConfig] =
+    (int("numberOfShards") <*>
+      boolean("enableAutoIncrSeqNbr") <*>
+      nested("db")(dbConfigDescriptor))(
+      { case ((int, bool), db) => CqlConfig(int, bool, db) },
+      cqlConfig => Some(cqlConfig.numberOfShards -> cqlConfig.enableAutoIncrSeqNbr -> cqlConfig.db)
+    )
+
+  def fromString(configStr: String): Task[CqlConfig] =
+    read(
+      CqlConfig.configDescriptor from
+        ConfigSource.fromHoconString(configStr)
+    )
+
   def toClientConfig(config: CqlConfig): TypeSafeConfig = ConfigFactory.parseString(
     s"""
-    |keyspace=${config.keyspace}
-    |preparedStatementCacheSize=${config.preparedStatementCacheSize}
-    |session.contactPoint=${config.session.contactPoint}
-    |session.queryOptions.consistencyLevel=${config.session.queryOptions.consistencyLevel.asString}    
+    |keyspace=${config.db.keyspace}
+    |preparedStatementCacheSize=${config.db.preparedStatementCacheSize}
+    |session.contactPoint=${config.db.session.contactPoint}
+    |session.queryOptions.consistencyLevel=${config.db.session.queryOptions.consistencyLevel.toString}
     """.stripMargin
   )
 }
