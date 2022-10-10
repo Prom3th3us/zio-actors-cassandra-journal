@@ -42,8 +42,14 @@ This will create all the necessary tables following the [akka-persistance schema
 Finally we can execute `sbt test` to spin them up.
 
 ### Release process
-1/ merge/push to main
-1/ create tag: ```$ git tag -a vX.Y.Z -m "vX.Y.Z"```
-2/ push the tag: ```$ git push origin vX.Y.Z```
+Repository [sonatype link](https://s01.oss.sonatype.org/#nexus-search;quick~io.github.prom3th3us)
 
-Repository link: https://s01.oss.sonatype.org/#nexus-search;quick~io.github.prom3th3us
+1. merge/push to main
+2. create tag: 
+    ```sh
+    $ git tag -a vX.Y.Z -m "vX.Y.Z"
+    ```
+3. push the tag: 
+    ```sh
+    $ git push origin vX.Y.Z
+    ```
